@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JADS Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+
+        // Dark mode support
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+
+        function filterFiles() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const rows = document.querySelectorAll('#file-table-body tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-200">
+    <nav class="bg-blue-600 dark:bg-blue-800 text-white p-4 flex justify-between items-center shadow-lg">
+        <h1 class="text-xl font-bold">JADS Dashboard</h1>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-blue-700 dark:hover:bg-blue-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <span class="hidden md:inline">Welcome, <%= user.username %> (<%= user.role %>)</span>
+            <a href="/logout" class="bg-red-500 hover:bg-red-700 px-3 py-1 rounded transition">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <!-- System Health Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-blue-500">
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase">Disk Space</h3>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="text-2xl font-bold dark:text-white"><%= health.disk.percent %>%</span>
+                    <span class="text-xs text-gray-400"><%= health.disk.used %> / <%= health.disk.total %> GB</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                    <div class="bg-blue-500 h-2 rounded-full" style="width: <%= health.disk.percent %>%"></div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-green-500">
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase">CPU Usage</h3>
+                <div class="mt-2">
+                    <span class="text-2xl font-bold dark:text-white"><%= health.cpu %>%</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                    <div class="bg-green-500 h-2 rounded-full" style="width: <%= health.cpu %>%"></div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-purple-500">
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase">RAM Usage</h3>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="text-2xl font-bold dark:text-white"><%= health.mem.percent %>%</span>
+                    <span class="text-xs text-gray-400"><%= health.mem.used %> / <%= health.mem.total %> GB</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                    <div class="bg-purple-500 h-2 rounded-full" style="width: <%= health.mem.percent %>%"></div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-yellow-500">
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase">Uptime</h3>
+                <div class="mt-2">
+                    <span class="text-xl font-bold dark:text-white">
+                        <%= health.uptime.days %>d <%= health.uptime.hours %>h <%= health.uptime.minutes %>m
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Side: Main Management -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- File Upload -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <h2 class="text-xl font-semibold mb-4 dark:text-white">Upload File</h2>
+                    <form action="/upload" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select File</label>
+                                <input type="file" name="file" required class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900 dark:file:text-blue-200 file:text-blue-700 hover:file:bg-blue-100">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiration (Optional Hours)</label>
+                                <input type="number" name="expiry" placeholder="Never" class="mt-1 block w-full border rounded-md px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">Upload</button>
+                    </form>
+                </div>
+
+                <!-- Files List -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow overflow-hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold dark:text-white">Manage Files</h2>
+                        <input type="text" id="search" onkeyup="filterFiles()" placeholder="Search files..." class="border rounded-md px-3 py-1 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-900/50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">File Details</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Download URL</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stats & Integrity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="file-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <% files.forEach(file => { %>
+                                    <tr>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white"><%= file.original_name %></div>
+                                            <div class="text-xs text-gray-500">By: <%= file.uploader || 'Unknown' %></div>
+                                            <% if (file.expires_at) { %>
+                                                <div class="text-xs text-red-500">Expires: <%= new Date(file.expires_at).toLocaleString() %></div>
+                                            <% } %>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <form action="/update-slug/<%= file.id %>" method="POST" class="flex flex-col gap-1">
+                                                <div class="flex gap-2">
+                                                    <input type="text" name="slug" value="<%= file.slug %>" class="border rounded px-2 py-1 text-xs w-32 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                                    <button type="submit" class="text-blue-600 hover:text-blue-900 text-xs">Update</button>
+                                                </div>
+                                                <div class="text-[10px] text-gray-400 break-all select-all cursor-pointer" onclick="navigator.clipboard.writeText('<%= baseDomain %>/<%= file.slug %>')">
+                                                    <%= baseDomain %>/<%= file.slug %>
+                                                </div>
+                                            </form>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-xs dark:text-gray-300">Downloads: <span class="font-bold"><%= file.downloads %></span></div>
+                                            <div class="text-[8px] text-gray-400 font-mono mt-1" title="<%= file.checksum %>">
+                                                SHA256: <%= file.checksum ? file.checksum.substring(0, 16) + '...' : 'N/A' %>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a href="/delete-file/<%= file.id %>" onclick="return confirm('Are you sure?')" class="text-red-600 hover:text-red-900 transition">Delete</a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Sidebar -->
+            <div class="space-y-8">
+                <!-- Global Settings (Admin Only) -->
+                <% if (user.role === 'Admin') { %>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 dark:text-white">Global Settings</h2>
+                        <form action="/update-settings" method="POST" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Maintenance Mode</label>
+                                <input type="checkbox" name="maintenanceMode" <%= maintenanceMode ? 'checked' : '' %> class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Upload Size (MB)</label>
+                                <input type="number" name="maxUploadSize" value="<%= maxUploadSize %>" class="mt-1 block w-full border rounded-md px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                            <button type="submit" class="w-full bg-gray-800 dark:bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">Save Settings</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 dark:text-white">User Management</h2>
+                        <form action="/add-user" method="POST" class="space-y-3 mb-6">
+                            <input type="text" name="username" placeholder="Username" required class="w-full border rounded px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="password" name="password" placeholder="Password" required class="w-full border rounded px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <select name="role" class="w-full border rounded px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="User">User</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                            <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">Add User</button>
+                        </form>
+                        <ul class="divide-y divide-gray-200 dark:divide-gray-700 max-h-48 overflow-y-auto">
+                            <% users.forEach(u => { %>
+                                <li class="py-2 flex justify-between items-center">
+                                    <div class="text-sm dark:text-white">
+                                        <span class="font-medium"><%= u.username %></span>
+                                        <span class="text-xs text-gray-500 ml-1">(<%= u.role %>)</span>
+                                    </div>
+                                    <% if (u.id !== user.id) { %>
+                                        <a href="/delete-user/<%= u.id %>" class="text-red-500 hover:text-red-700 text-xs">Remove</a>
+                                    <% } %>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    </div>
+
+                    <!-- Audit Logs -->
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 dark:text-white">Audit Trail</h2>
+                        <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                            <% auditLogs.forEach(log => { %>
+                                <div class="text-[10px] border-b border-gray-100 dark:border-gray-700 pb-2">
+                                    <div class="flex justify-between text-gray-500">
+                                        <span><%= new Date(log.timestamp).toLocaleString() %></span>
+                                        <span class="font-bold text-blue-500"><%= log.action %></span>
+                                    </div>
+                                    <div class="dark:text-gray-300 mt-1"><%= log.details %></div>
+                                    <div class="text-gray-400 italic">User: <%= log.username || 'System' %> | IP: <%= log.ip_address %></div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <footer class="mt-8 pb-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+        <p>Built by <a href="https://kagz.de" target="_blank" class="text-blue-500 hover:underline">Adem Karagöz</a></p>
+    </footer>
+</body>
+</html>

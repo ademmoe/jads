@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JADS - First Time Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col items-center justify-center transition-colors duration-200">
+    <div class="flex-grow flex items-center justify-center w-full p-4">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-md">
+            <h1 class="text-2xl font-bold mb-6 text-center dark:text-white">First-Time Setup</h1>
+            <form action="/setup" method="POST">
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Base Domain</label>
+                    <input type="text" name="baseDomain" placeholder="https://mirror.example.com" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Include protocol (http/https) and no trailing slash.</p>
+                </div>
+                <hr class="my-6 border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-semibold mb-4 dark:text-white">Primary Admin Account</h2>
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Username</label>
+                    <input type="text" name="username" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Password</label>
+                    <input type="password" name="password" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-gray-700 dark:border-gray-600 mb-3 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                        Complete Setup
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <footer class="pb-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+        <p>Built by <a href="https://kagz.de" target="_blank" class="text-blue-500 hover:underline">Adem Karagöz</a></p>
+    </footer>
+</body>
+</html>
