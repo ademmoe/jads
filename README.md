@@ -189,4 +189,3 @@ This project is licensed under the [MIT License](LICENSE) - see the [LICENSE](LI
 Made with ❤️ by [Adem Karagöz](https://github.com/ademmoe)
 
 </div>
-```
