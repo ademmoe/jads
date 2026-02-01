@@ -64,7 +64,7 @@ Before you begin, ensure you have the following installed:
 
 4.  **Start server**
     ```bash
-    npm start
+    node index.js
     ```
 
 5.  **Open your browser**
