@@ -1,5 +1,3 @@
-# JADS (Just A Download Server)
-
 <div align="center">
 
 [![GitHub stars](https://img.shields.io/github/stars/ademmoe/jads?style=for-the-badge)](https://github.com/ademmoe/jads/stargazers)
@@ -24,6 +22,11 @@
 - 🔑 **Administrator Authentication:** Secure login system to protect the dashboard and upload functionalities.
 - 💾 **SQLite Database:** Lightweight and easy-to-set-up database for storing file metadata and user information.
 - ⚡ **Lightweight & Efficient:** Built with Node.js and Express.js for fast performance.
+
+## Screenshots
+<img width="600" height="280" alt="Screenshot 2026-02-03 220100" src="https://github.com/user-attachments/assets/9d070db3-6606-4859-882d-acb8cfe2221b" />
+<img width="600" height="280" alt="Screenshot 2026-02-03 220137" src="https://github.com/user-attachments/assets/d0fb37c3-78df-4c66-8481-326c7a58b04f" />
+<img width="600" height="280" alt="Screenshot 2026-02-03 220223" src="https://github.com/user-attachments/assets/65147a21-6c70-4736-afaa-e855a10848f5" />
 
 ## 🛠️ Tech Stack
 
