@@ -7,6 +7,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const si = require('systeminformation');
 const db = require('./database');
+const lusca = require('lusca');
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
@@ -62,6 +63,15 @@ app.use(session({
     saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
+
+// CSRF protection
+app.use(lusca.csrf());
+app.use((req, res, next) => {
+    if (req.csrfToken) {
+        res.locals.csrfToken = req.csrfToken();
+    }
+    next();
+});
 
 // Setup Middleware
 app.use((req, res, next) => {
