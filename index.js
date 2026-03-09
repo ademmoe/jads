@@ -33,6 +33,15 @@ setInterval(() => {
 const app = express();
 const port = 3000;
 
+// set up rate limiter: maximum of 100 requests per 15 minutes per IP
+const limiter = RateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+});
+
+// apply rate limiter to all requests
+app.use(limiter);
+
 // Multer config
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
