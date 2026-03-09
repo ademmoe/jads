@@ -29,6 +29,7 @@
     "form-data": "^4.0.5",
     "multer": "^2.0.2",
     "systeminformation": "^5.30.7",
-    "tough-cookie": "^6.0.0"
+    "tough-cookie": "^6.0.0",
+    "lusca": "^1.7.0"
   }
 }
