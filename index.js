@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const si = require('systeminformation');
 const db = require('./database');
 const lusca = require('lusca');
+const RateLimit = require('express-rate-limit');
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
@@ -302,7 +303,14 @@ app.post('/update-settings', isAuthenticated, (req, res) => {
 });
 
 // Public Mirror Functionality
-app.get('/:slug', (req, res) => {
+const publicDownloadLimiter = RateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+app.get('/:slug', publicDownloadLimiter, (req, res) => {
     const file = db.prepare('SELECT * FROM files WHERE slug = ?').get(req.params.slug);
     if (file) {
         const filePath = path.join(__dirname, 'uploads', file.filename);
