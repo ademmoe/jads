@@ -30,6 +30,7 @@
     "multer": "^2.0.2",
     "systeminformation": "^5.30.7",
     "tough-cookie": "^6.0.0",
-    "lusca": "^1.7.0"
+    "lusca": "^1.7.0",
+    "express-rate-limit": "^8.3.0"
   }
 }
