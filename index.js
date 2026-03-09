@@ -8,6 +8,8 @@ const crypto = require('crypto');
 const si = require('systeminformation');
 const db = require('./database');
 
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+
 // Helper for audit logs
 function logAction(action, details, userId, req) {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -188,7 +190,13 @@ app.post('/upload', isAuthenticated, upload.single('file'), (req, res) => {
         expiresAt = new Date(Date.now() + parseInt(expiry) * 60 * 60 * 1000).toISOString();
     }
 
-    const filePath = path.join(__dirname, 'uploads', req.file.filename);
+    const candidatePath = path.resolve(UPLOADS_DIR, req.file.filename);
+    if (!candidatePath.startsWith(UPLOADS_DIR + path.sep) && candidatePath !== UPLOADS_DIR) {
+        logAction('File Upload Error', `Invalid upload path for file: ${req.file.originalname}`, req.session.user.id, req);
+        return res.status(400).send('Invalid file path');
+    }
+
+    const filePath = candidatePath;
     const fileBuffer = fs.readFileSync(filePath);
     const hashSum = crypto.createHash('sha256');
     hashSum.update(fileBuffer);
